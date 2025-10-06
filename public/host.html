@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lotería Host</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Host Controls -->
+        <div id="caller-area" class="host-view">
+            <img src="images/Envolvente_Rosa.png" alt="">
+            <h1>Lotería! (Host)</h1>
+            <div id="host-controls">
+                <button id="create-game-btn">Crear Nuevo Juego</button>
+                <div id="draw-card-section" class="hidden">
+                    <div id="drawn-card-display">
+                        <img id="drawn-image" src="" alt="Esperando para sortear.">
+                    </div>
+                    <button id="draw-button">Sortear siguiente carta</button>
+                </div>
+            </div>
+            <div id="winner-notification" class="hidden"></div>
+        </div>
+
+        <!-- Live Game Info -->
+        <div id="bingo-board-container">
+            <h2>Cartas Sorteadas</h2>
+            <div id="drawn-cards-grid" class="drawn-cards-view">
+                <!-- Drawn cards will appear here -->
+            </div>
+            <hr>
+            <h2>Jugadores Conectados (<span id="player-count">0</span>)</h2>
+            <ul id="player-list">
+                <!-- Player names and their boards will be listed here -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- Socket.IO client library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Custom game logic script -->
+    <script src="js/app.js"></script>
+</body>
+</html>
+
