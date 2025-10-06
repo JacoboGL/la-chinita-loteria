@@ -1,5 +1,3 @@
-/* Keep your existing styles, and add/modify these ones */
-
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f4f9;
@@ -7,9 +5,10 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Changed to flex-start for better layout */
+    align-items: flex-start; /* Aligns content to the top */
     padding: 2em;
-    margin-top: 1em;
+    margin: 0;
+    min-height: 100vh;
 }
 
 #game-container {
@@ -18,42 +17,33 @@ body {
     gap: 40px;
     align-items: flex-start;
     justify-content: center;
+    width: 100%;
 }
 
-.hidden {
-    display: none !important;
+h1, h2 {
+    text-align: center;
 }
 
-/* Caller Area & Host View Styles */
-#caller-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* --- Views --- */
+.host-container, .player-container {
     background-color: #ffffff;
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     text-align: center;
-    min-width: 300px;
+    width: 100%;
 }
 
-#drawn-card-display {
-    width: 250px;
-    height: 250px;
-    border: 3px dashed #d1d1d1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 15px 0 25px 0;
-    background-color: #fafafa;
-    border-radius: 8px;
-    color: #888;
+.host-container {
+    max-width: 1000px;
 }
 
-#drawn-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+.player-container {
+    max-width: 500px;
+}
+
+.hidden {
+    display: none;
 }
 
 button {
@@ -85,56 +75,86 @@ button:disabled {
 /* Host's Drawn Cards Grid */
 .drawn-cards-view {
     display: grid;
-    /* CHANGED: Updated to a 5x5 grid */
-    grid-template-columns: repeat(5, 1fr);
+    /* UPDATED: Changed to an 8x4 grid for 32 cards */
+    grid-template-columns: repeat(8, 1fr);
     gap: 8px;
     width: 100%;
-    max-width: 700px;
+    max-width: 900px; /* Adjusted width for more columns */
     margin: auto;
     background-color: rgba(255,255,255,0.5);
     padding: 10px;
     border-radius: 8px;
 }
 
-.drawn-cards-view .card-cell {
+.card-cell {
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
-    aspect-ratio: 3/4;
+    background-color: rgba(255, 255, 255, 0.1); 
+    aspect-ratio: 3 / 4;
 }
 
-.drawn-cards-view .card-cell img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.card-cell img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Host Controls */
+#host-controls {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+#draw-card-section {
+    flex-grow: 1;
+}
+
+#drawn-image-display {
+    width: 250px;
+    height: 250px;
+    border: 3px dashed #d1d1d1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px auto 25px auto;
+    background-color: #fafafa;
+    border-radius: 8px;
+    color: #888;
+}
+
+#drawn-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+#player-info {
+    min-width: 250px;
+    text-align: left;
 }
 
 #player-list {
     list-style-type: none;
     padding: 0;
-    text-align: left;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 #winner-notification {
     margin-top: 20px;
-    padding: 15px;
-    background-color: #4CAF50;
-    color: white;
     font-size: 1.5em;
-    border-radius: 8px;
+    color: #4CAF50;
     font-weight: bold;
 }
 
-/* --- Player View Styles --- */
-#player-view {
-    background-color: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    text-align: center;
-    width: 100%;
-    max-width: 500px;
-}
 
+/* Player View */
 #join-game-form input, #join-game-form select {
     display: block;
     width: 80%;
@@ -145,7 +165,7 @@ button:disabled {
     border: 1px solid #ccc;
 }
 
-/* NEW: Board Preview Styles */
+/* Board Preview Styles */
 #board-preview-container {
     width: 80%;
     max-width: 300px;
@@ -174,47 +194,27 @@ button:disabled {
 .last-drawn-card-display {
     width: 200px;
     height: 200px;
-    margin: 15px auto;
-    border: 2px solid #eee;
-    border-radius: 8px;
+    border: 2px dashed #ddd;
+    margin: 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.last-drawn-card-display img{
+.last-drawn-card-display img {
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain;
 }
 
 .player-board-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 10px;
-    margin: 20px auto;
+    max-width: 400px;
+    margin: auto;
 }
 
-.player-board-grid .card-cell {
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-    aspect-ratio: 3/4;
+.player-board-grid .card-cell.marked {
+    opacity: 0.3;
+    filter: grayscale(100%);
 }
-
-.player-board-grid .card-cell img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Player card overlay for marked cards */
-.card-cell.marked::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: grayscale(100%);
-}
-
 

@@ -56,7 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
             playerList.innerHTML = '';
             Object.values(gameState.players).forEach(player => {
                 const li = document.createElement('li');
-                li.textContent = `${player.name} (Tablero #${player.board.id})`;
+                // UPDATED: Display board number as 1-based for consistency
+                li.textContent = `${player.name} (Tablero #${player.board.id + 1})`;
                 playerList.appendChild(li);
             });
         });

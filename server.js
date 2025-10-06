@@ -32,7 +32,7 @@ const ALL_CARD_NAMES = [
     '25.webp', '26.webp', '27.webp', '28.webp', '29.webp', '30.webp', '31.webp', '32.webp'
 ];
 const CARDS_PER_BOARD = 16; // Using 4x4 boards for players for faster games.
-const NUM_BOARDS_TO_GENERATE = 50; // Generate a pool of 50 boards for players to choose from.
+const NUM_BOARDS_TO_GENERATE = 32; // Generate a pool of 32 boards for players to choose from.
 
 // --- HELPER FUNCTIONS ---
 
