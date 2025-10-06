@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
 
-        // NEW: Get board preview element
         const boardPreviewImg = document.getElementById('board-preview-img');
         
         const displayPlayerName = document.getElementById('display-player-name');
@@ -87,10 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const playerBoard = document.getElementById('player-board');
         const claimWinBtn = document.getElementById('claim-win-btn');
 
-        // NEW: Get chosen board name element
         const chosenBoardName = document.getElementById('chosen-board-name');
         
-        // NEW: Path for board preview images (assuming a new 'Boards' folder)
         const boardPreviewPath = 'images/Boards/';
 
         let myBoardCards = [];
@@ -100,18 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
             boardPool.forEach(board => {
                 const option = document.createElement('option');
                 option.value = board.id;
-                option.textContent = `Tablero #${board.id + 1}`; // Display as 1-based
+                option.textContent = `Tablero #${board.id + 1}`;
                 boardSelect.appendChild(option);
             });
-            // NEW: Trigger change event to show the first board preview immediately
             boardSelect.dispatchEvent(new Event('change'));
         });
 
-        // NEW: Event listener for board preview
         boardSelect.addEventListener('change', () => {
             const selectedBoardId = boardSelect.value;
-            // Assumes board images are named T1.jpg, T2.jpg, etc.
-            boardPreviewImg.src = `${boardPreviewPath}T${parseInt(selectedBoardId) + 1}.jpg`;
+            // UPDATED: Changed .jpg to .webp
+            boardPreviewImg.src = `${boardPreviewPath}T${parseInt(selectedBoardId) + 1}.webp`;
         });
 
         joinBtn.addEventListener('click', () => {
@@ -125,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             socket.emit('player:joinGame', { playerName, boardId });
 
-            // NEW: Set the chosen board name text for when the view becomes visible
             const selectedOption = boardSelect.options[boardSelect.selectedIndex];
             chosenBoardName.textContent = selectedOption.textContent;
 
@@ -137,8 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         socket.on('game:update', (gameState) => {
             if (Object.values(gameState.players).find(p => p.id === socket.id)) {
-                 // Initial board render
-                if (playerBoard.innerHTML === '') {
+                 if (playerBoard.innerHTML === '') {
                     const me = Object.values(gameState.players).find(p => p.id === socket.id);
                     myBoardCards = me.board.cards;
                     myBoardCards.forEach(cardName => {
@@ -153,13 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
            
-            // Update last drawn card
             if (gameState.drawnCards.length > 0) {
                  const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
                  lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
             }
 
-            // Mark cards on the board
             const drawnCardsSet = new Set(gameState.drawnCards);
             const boardCells = playerBoard.querySelectorAll('.card-cell');
             let markedCount = 0;
@@ -170,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Check for win condition
             if (markedCount === myBoardCards.length && myBoardCards.length > 0) {
                 claimWinBtn.disabled = false;
             }
