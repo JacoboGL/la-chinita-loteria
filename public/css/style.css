@@ -1,7 +1,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f4f4f9;
-    background-image: url('../images/PatronCircularFondo.png');
+    background-color: #ffffff;
+    background-image: url('../images/PatronCircularFondo2.png');
     color: #333;
     display: flex;
     justify-content: center;
@@ -152,21 +152,21 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 #player-board-markers {
     position: absolute;
-    top: 0;
+    top: -27px;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 102%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     /* These values may need manual tweaking to perfectly align with your board image design */
-    padding: 13% 10%; 
-    gap: 4% 5%;
+    padding: 14% 0%; 
+    gap: 0% 0%;
     box-sizing: border-box;
 }
 
 .marker-cell { display: flex; align-items: center; justify-content: center; }
-.marker { font-size: 3em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; }
+.marker { font-size: 5em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; background-color: #0000004a; }
 @keyframes fadeIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 0.9; } }
 
 /* --- ✨ RESPONSIVE DESIGN --- */
@@ -181,6 +181,19 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     #host-controls { flex-direction: row; }
     .drawn-cards-view { grid-template-columns: repeat(8, 1fr); }
     #player-info { text-align: left; }
-    .marker { font-size: 4em; }
+    .marker { font-size: 6em; }
+    #player-board-markers {
+    top: -33px;
+    left: 0;
+    width: 100%;
+    height: 102%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    /* These values may need manual tweaking to perfectly align with your board image design */
+    padding: 14% 0%; 
+    gap: 0% 0%;
+    box-sizing: border-box;
+}
 }
 
