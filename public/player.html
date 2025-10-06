@@ -3,55 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lotería</title>
+    <title>La Chinita Lottery - Player</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div id="game-container" class="player-container">
-
-        <!-- Player View -->
-        <div id="player-view">
-            <!-- 1. Join Game Form -->
+    <div id="game-container">
+        <div id="player-view" class="player-container">
+            <!-- Section for Joining the Game -->
             <div id="join-game-form">
                 <h1>Únete al Juego</h1>
-                <input type="text" id="player-name" placeholder="Escribe tu nombre" maxlength="20">
-                <label for="board-select">Elige tu tablero:</label>
-                <select id="board-select">
-                    <!-- Board options will be populated by JS -->
-                </select>
-                <!-- NEW: Board Preview -->
+                <input type="text" id="player-name" placeholder="Tu Nombre">
+                <select id="board-select"></select>
+                <!-- Board Preview -->
                 <div id="board-preview-container">
-                    <img id="board-preview-img" src="" alt="Vista previa del tablero">
+                    <img id="board-preview-img" src="" alt="Vista Previa del Tablero">
                 </div>
                 <button id="join-btn">Unirse</button>
             </div>
 
-            <!-- 2. Waiting Screen -->
+            <!-- Section Shown While Waiting for Game to Start -->
             <div id="waiting-screen" class="hidden">
-                <h2>Hola, <span id="display-player-name"></span>!</h2>
-                <p>Esperando a que el anfitrión sortee la primera carta...</p>
-                <h3>Última Carta Sorteada:</h3>
-                <div class="last-drawn-card-display">
-                     <img id="last-drawn-img" src="" alt="">
-                </div>
+                <h2>¡Bienvenido, <span id="display-player-name"></span>!</h2>
+                <p>Esperando que el anfitrión inicie el juego y sortee la primera carta...</p>
             </div>
 
-            <!-- 3. Game Board View -->
+            <!-- Main Player Board Display -->
             <div id="player-board-container" class="hidden">
-                 <h2>Tu Tablero</h2>
-                 <!-- NEW: Chosen Board Name Display -->
-                 <h3 id="chosen-board-name"></h3>
-                 <div id="player-board" class="player-board-grid">
-                    <!-- Player's 4x4 board will be rendered here -->
-                 </div>
-                 <button id="claim-win-btn" disabled>¡Lotería!</button>
+                <h2 id="chosen-board-name"></h2>
+                <div class="last-drawn-card-display">
+                    <img id="last-drawn-img" src="" alt="Última Carta Sorteada">
+                </div>
+                
+                <!-- UPDATED: This container will now hold the background image and the marker overlay -->
+                <div id="player-board">
+                    <img id="player-board-bg" src="" alt="Tu Tablero">
+                    <div id="player-board-markers">
+                        <!-- The 4x4 grid of markers will be generated here by JavaScript -->
+                    </div>
+                </div>
+
+                <button id="claim-win-btn" disabled>¡Lotería!</button>
             </div>
         </div>
     </div>
 
     <!-- Socket.IO client library -->
     <script src="/socket.io/socket.io.js"></script>
-    <!-- Custom game logic script -->
+    <!-- Your custom client-side script -->
     <script src="js/app.js"></script>
 </body>
 </html>

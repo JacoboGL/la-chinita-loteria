@@ -75,11 +75,10 @@ button:disabled {
 /* Host's Drawn Cards Grid */
 .drawn-cards-view {
     display: grid;
-    /* UPDATED: Changed to an 8x4 grid for 32 cards */
     grid-template-columns: repeat(8, 1fr);
     gap: 8px;
     width: 100%;
-    max-width: 900px; /* Adjusted width for more columns */
+    max-width: 900px;
     margin: auto;
     background-color: rgba(255,255,255,0.5);
     padding: 10px;
@@ -165,7 +164,6 @@ button:disabled {
     border: 1px solid #ccc;
 }
 
-/* Board Preview Styles */
 #board-preview-container {
     width: 80%;
     max-width: 300px;
@@ -190,7 +188,6 @@ button:disabled {
     color: #555;
 }
 
-
 .last-drawn-card-display {
     width: 200px;
     height: 200px;
@@ -205,16 +202,54 @@ button:disabled {
     max-height: 100%;
 }
 
-.player-board-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    max-width: 400px;
+/* --- UPDATED PLAYER BOARD STYLES --- */
+#player-board {
+    position: relative; /* This is the container for the image and the marker grid */
+    max-width: 450px;
     margin: auto;
+    aspect-ratio: 1 / 1;
 }
 
-.player-board-grid .card-cell.marked {
-    opacity: 0.3;
-    filter: grayscale(100%);
+#player-board-bg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 8px;
+}
+
+#player-board-markers {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: 1%; /* Adjust gap as needed */
+    padding: 5%; /* Adjust padding to align with your board's design */
+    box-sizing: border-box;
+}
+
+.marker-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marker {
+    font-size: 4em; /* Size of the 'X' */
+    color: #ff037e;
+    font-weight: bold;
+    line-height: 1;
+    opacity: 0.9;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    /* Animation for the 'X' appearing */
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 0.9; }
 }
 

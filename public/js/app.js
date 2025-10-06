@@ -3,8 +3,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const imageFolderPath = 'images/Deck/';
-    
+    const boardImagePath = 'images/Boards/';
+
     // --- GENERAL ---
+    socket.on('error', (message) => alert(`Error: ${message}`));
     socket.on('error:gameInProgress', (message) => alert(message));
     socket.on('error:gameNotStarted', (message) => alert(message));
     socket.on('game:ended', (message) => {
@@ -23,24 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const playerList = document.getElementById('player-list');
         const winnerNotification = document.getElementById('winner-notification');
 
-        createGameBtn.addEventListener('click', () => {
-            socket.emit('host:createGame');
-            createGameBtn.classList.add('hidden');
-            drawCardSection.classList.remove('hidden');
-        });
-
-        drawButton.addEventListener('click', () => {
-            socket.emit('host:drawCard');
-        });
+        createGameBtn.addEventListener('click', () => socket.emit('host:createGame'));
+        drawButton.addEventListener('click', () => socket.emit('host:drawCard'));
 
         socket.on('game:update', (gameState) => {
-            // Update drawn card display
+            if (gameState.gameInProgress && createGameBtn) {
+                createGameBtn.classList.add('hidden');
+                drawCardSection.classList.remove('hidden');
+            }
             if (gameState.drawnCards.length > 0) {
                 const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
                 drawnImage.src = `${imageFolderPath}${lastCard}`;
             }
-
-            // Update drawn cards grid
             drawnCardsGrid.innerHTML = '';
             gameState.drawnCards.forEach(cardName => {
                 const cell = document.createElement('div');
@@ -50,13 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.appendChild(img);
                 drawnCardsGrid.appendChild(cell);
             });
-            
-            // Update player list
             playerCountSpan.textContent = Object.keys(gameState.players).length;
             playerList.innerHTML = '';
             Object.values(gameState.players).forEach(player => {
                 const li = document.createElement('li');
-                // UPDATED: Display board number as 1-based for consistency
                 li.textContent = `${player.name} (Tablero #${player.board.id + 1})`;
                 playerList.appendChild(li);
             });
@@ -72,26 +65,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PLAYER LOGIC ---
     if (document.getElementById('player-view')) {
         const joinForm = document.getElementById('join-game-form');
-        const waitingScreen = document.getElementById('waiting-screen');
         const playerBoardContainer = document.getElementById('player-board-container');
-        
         const playerNameInput = document.getElementById('player-name');
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
-
         const boardPreviewImg = document.getElementById('board-preview-img');
-        
-        const displayPlayerName = document.getElementById('display-player-name');
         const lastDrawnImg = document.getElementById('last-drawn-img');
-        
-        const playerBoard = document.getElementById('player-board');
+        const playerBoardBg = document.getElementById('player-board-bg');
+        const playerBoardMarkers = document.getElementById('player-board-markers');
         const claimWinBtn = document.getElementById('claim-win-btn');
-
         const chosenBoardName = document.getElementById('chosen-board-name');
         
-        const boardPreviewPath = 'images/Boards/';
-
-        let myBoardCards = [];
+        let myBoard = null;
 
         socket.on('game:boardPool', (boardPool) => {
             boardSelect.innerHTML = '';
@@ -101,71 +86,80 @@ document.addEventListener('DOMContentLoaded', () => {
                 option.textContent = `Tablero #${board.id + 1}`;
                 boardSelect.appendChild(option);
             });
-            boardSelect.dispatchEvent(new Event('change'));
+            if (boardPool.length > 0) {
+                boardSelect.dispatchEvent(new Event('change'));
+            }
         });
 
         boardSelect.addEventListener('change', () => {
             const selectedBoardId = boardSelect.value;
-            // UPDATED: Changed .jpg to .webp
-            boardPreviewImg.src = `${boardPreviewPath}T${parseInt(selectedBoardId) + 1}.webp`;
+            boardPreviewImg.src = `${boardImagePath}T${parseInt(selectedBoardId) + 1}.webp`;
         });
 
         joinBtn.addEventListener('click', () => {
             const playerName = playerNameInput.value.trim();
             const boardId = parseInt(boardSelect.value, 10);
-
             if (!playerName) {
                 alert('Por favor, escribe tu nombre.');
                 return;
             }
-
             socket.emit('player:joinGame', { playerName, boardId });
-
-            const selectedOption = boardSelect.options[boardSelect.selectedIndex];
-            chosenBoardName.textContent = selectedOption.textContent;
-
-            joinForm.classList.add('hidden');
-            waitingScreen.classList.remove('hidden');
-            playerBoardContainer.classList.remove('hidden');
-            displayPlayerName.textContent = playerName;
         });
         
         socket.on('game:update', (gameState) => {
-            if (Object.values(gameState.players).find(p => p.id === socket.id)) {
-                 if (playerBoard.innerHTML === '') {
-                    const me = Object.values(gameState.players).find(p => p.id === socket.id);
-                    myBoardCards = me.board.cards;
-                    myBoardCards.forEach(cardName => {
-                        const cell = document.createElement('div');
-                        cell.className = 'card-cell';
-                        cell.dataset.cardName = cardName;
-                        const img = document.createElement('img');
-                        img.src = `${imageFolderPath}${cardName}`;
-                        cell.appendChild(img);
-                        playerBoard.appendChild(cell);
-                    });
+            const me = Object.values(gameState.players).find(p => p.id === socket.id);
+            if (me && !myBoard) {
+                myBoard = me.board;
+                setupPlayerBoard();
+            }
+            
+            if (myBoard) {
+                updateMarkers(gameState.drawnCards);
+                if (gameState.drawnCards.length > 0) {
+                    const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
+                    lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
                 }
             }
-           
-            if (gameState.drawnCards.length > 0) {
-                 const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
-                 lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
-            }
+        });
 
-            const drawnCardsSet = new Set(gameState.drawnCards);
-            const boardCells = playerBoard.querySelectorAll('.card-cell');
+        function setupPlayerBoard() {
+            joinForm.classList.add('hidden');
+            playerBoardContainer.classList.remove('hidden');
+
+            chosenBoardName.textContent = `Tablero #${myBoard.id + 1}`;
+            playerBoardBg.src = `${boardImagePath}${myBoard.image}`;
+
+            // Create the 16 empty marker cells
+            playerBoardMarkers.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'marker-cell';
+                playerBoardMarkers.appendChild(cell);
+            }
+        }
+
+        function updateMarkers(drawnCards) {
+            const drawnCardsSet = new Set(drawnCards);
             let markedCount = 0;
-            boardCells.forEach(cell => {
-                if (drawnCardsSet.has(cell.dataset.cardName)) {
-                    cell.classList.add('marked');
+
+            myBoard.cards.forEach(card => {
+                if (drawnCardsSet.has(card.id)) {
                     markedCount++;
+                    const index = card.pos.row * 4 + card.pos.col;
+                    const cell = playerBoardMarkers.children[index];
+                    if (cell && !cell.hasChildNodes()) {
+                        const marker = document.createElement('div');
+                        marker.className = 'marker';
+                        marker.textContent = 'X';
+                        cell.appendChild(marker);
+                    }
                 }
             });
 
-            if (markedCount === myBoardCards.length && myBoardCards.length > 0) {
+            if (markedCount === myBoard.cards.length && myBoard.cards.length > 0) {
                 claimWinBtn.disabled = false;
             }
-        });
+        }
 
         claimWinBtn.addEventListener('click', () => {
             socket.emit('player:claimWin');
