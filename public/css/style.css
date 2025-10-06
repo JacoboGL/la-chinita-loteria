@@ -5,18 +5,17 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Aligns content to the top */
-    padding: 2em;
+    align-items: flex-start;
+    padding: 1em; /* Reduced padding for mobile */
     margin: 0;
     min-height: 100vh;
 }
 
 #game-container {
     display: flex;
-    flex-wrap: wrap;
-    gap: 40px;
-    align-items: flex-start;
-    justify-content: center;
+    flex-direction: column; /* Stack vertically by default */
+    gap: 20px;
+    align-items: center;
     width: 100%;
 }
 
@@ -24,22 +23,15 @@ h1, h2 {
     text-align: center;
 }
 
-/* --- Views --- */
 .host-container, .player-container {
     background-color: #ffffff;
-    padding: 25px;
+    padding: 20px;
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     text-align: center;
     width: 100%;
-}
-
-.host-container {
-    max-width: 1000px;
-}
-
-.player-container {
-    max-width: 500px;
+    max-width: 500px; /* Max width for mobile-first */
+    box-sizing: border-box;
 }
 
 .hidden {
@@ -47,8 +39,8 @@ h1, h2 {
 }
 
 button {
-    padding: 12px 30px;
-    font-size: 1.1em;
+    padding: 12px 25px;
+    font-size: 1em;
     font-weight: bold;
     cursor: pointer;
     background-color: #ff037e;
@@ -58,47 +50,31 @@ button {
     transition: background-color 0.3s, transform 0.1s;
     margin-top: 10px;
 }
-
-button:hover:not(:disabled) {
-    background-color: #ff65b0;
-}
-
-button:active:not(:disabled) {
-    transform: scale(0.98);
-}
-
-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-}
+button:hover:not(:disabled) { background-color: #ff65b0; }
+button:active:not(:disabled) { transform: scale(0.98); }
+button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 /* Host's Drawn Cards Grid */
 .drawn-cards-view {
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 columns for mobile */
     gap: 8px;
     width: 100%;
-    max-width: 900px;
     margin: auto;
     background-color: rgba(255,255,255,0.5);
     padding: 10px;
     border-radius: 8px;
+    box-sizing: border-box;
 }
 
 .card-cell {
-    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     overflow: hidden;
-    background-color: rgba(255, 255, 255, 0.1); 
     aspect-ratio: 3 / 4;
 }
-
 .card-cell img {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     display: block;
 }
@@ -106,116 +82,73 @@ button:disabled {
 /* Host Controls */
 #host-controls {
     display: flex;
-    gap: 40px;
-    align-items: flex-start;
-}
-
-#draw-card-section {
-    flex-grow: 1;
+    flex-direction: column; /* Stack controls vertically on mobile */
+    gap: 20px;
+    align-items: center;
 }
 
 #drawn-image-display {
-    width: 250px;
-    height: 250px;
+    width: 200px;
+    height: 200px;
     border: 3px dashed #d1d1d1;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 15px auto 25px auto;
+    margin: 15px auto;
     background-color: #fafafa;
     border-radius: 8px;
-    color: #888;
 }
+#drawn-image { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-#drawn-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-#player-info {
-    min-width: 250px;
-    text-align: left;
-}
-
-#player-list {
-    list-style-type: none;
-    padding: 0;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-#winner-notification {
-    margin-top: 20px;
-    font-size: 1.5em;
-    color: #4CAF50;
-    font-weight: bold;
-}
-
+#player-info { text-align: center; }
+#player-list { list-style-type: none; padding: 0; max-height: 150px; overflow-y: auto; }
+#winner-notification { margin-top: 15px; font-size: 1.2em; color: #4CAF50; font-weight: bold; }
 
 /* Player View */
 #join-game-form input, #join-game-form select {
     display: block;
-    width: 80%;
+    width: 90%;
     margin: 15px auto;
     padding: 10px;
     font-size: 1em;
     border-radius: 5px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
 #board-preview-container {
     width: 80%;
-    max-width: 300px;
+    max-width: 250px;
     margin: 20px auto;
     border: 3px solid #eee;
     border-radius: 8px;
     overflow: hidden;
-    background-color: #fafafa;
 }
+#board-preview-img { width: 100%; display: block; }
 
-#board-preview-img {
-    width: 100%;
-    display: block;
-    aspect-ratio: 1 / 1;
-    object-fit: contain;
-}
-
-#chosen-board-name {
-    margin: -10px 0 15px 0;
-    font-size: 1.2em;
-    font-weight: normal;
-    color: #555;
-}
+#chosen-board-name { font-size: 1.2em; }
 
 .last-drawn-card-display {
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
     border: 2px dashed #ddd;
     margin: 10px auto;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.last-drawn-card-display img {
-    max-width: 100%;
-    max-height: 100%;
-}
+.last-drawn-card-display img { max-width: 100%; max-height: 100%; }
 
-/* --- UPDATED PLAYER BOARD STYLES --- */
+/* ✨ UPDATED: Player board with correct aspect ratio */
 #player-board {
-    position: relative; /* This is the container for the image and the marker grid */
-    max-width: 450px;
+    position: relative;
+    max-width: 400px;
+    width: 95%;
     margin: auto;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1561 / 2460; /* The exact ratio of your images */
 }
 
-#player-board-bg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    border-radius: 8px;
-}
+#player-board-bg { width: 100%; height: 100%; display: block; border-radius: 8px; }
 
 #player-board-markers {
     position: absolute;
@@ -226,30 +159,28 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
-    gap: 1%; /* Adjust gap as needed */
-    padding: 5%; /* Adjust padding to align with your board's design */
+    /* These values may need manual tweaking to perfectly align with your board image design */
+    padding: 13% 10%; 
+    gap: 4% 5%;
     box-sizing: border-box;
 }
 
-.marker-cell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+.marker-cell { display: flex; align-items: center; justify-content: center; }
+.marker { font-size: 3em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 0.9; } }
 
-.marker {
-    font-size: 4em; /* Size of the 'X' */
-    color: #ff037e;
-    font-weight: bold;
-    line-height: 1;
-    opacity: 0.9;
-    text-shadow: 0 0 5px rgba(0,0,0,0.5);
-    /* Animation for the 'X' appearing */
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { transform: scale(0.5); opacity: 0; }
-    to { transform: scale(1); opacity: 0.9; }
+/* --- ✨ RESPONSIVE DESIGN --- */
+/* For tablets and desktops */
+@media (min-width: 768px) {
+    #game-container {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+    }
+    .host-container { max-width: 1000px; }
+    #host-controls { flex-direction: row; }
+    .drawn-cards-view { grid-template-columns: repeat(8, 1fr); }
+    #player-info { text-align: left; }
+    .marker { font-size: 4em; }
 }
 

@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const joinForm = document.getElementById('join-game-form');
         const playerBoardContainer = document.getElementById('player-board-container');
         const playerNameInput = document.getElementById('player-name');
+        const playerPhoneInput = document.getElementById('player-phone'); // New phone input
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
         const boardPreviewImg = document.getElementById('board-preview-img');
@@ -79,31 +80,32 @@ document.addEventListener('DOMContentLoaded', () => {
         let myBoard = null;
 
         socket.on('game:boardPool', (boardPool) => {
-            boardSelect.innerHTML = '';
+            boardSelect.innerHTML = '<option value="" disabled selected>Elige un tablero</option>';
             boardPool.forEach(board => {
                 const option = document.createElement('option');
                 option.value = board.id;
                 option.textContent = `Tablero #${board.id + 1}`;
                 boardSelect.appendChild(option);
             });
-            if (boardPool.length > 0) {
-                boardSelect.dispatchEvent(new Event('change'));
-            }
         });
 
         boardSelect.addEventListener('change', () => {
             const selectedBoardId = boardSelect.value;
-            boardPreviewImg.src = `${boardImagePath}T${parseInt(selectedBoardId) + 1}.webp`;
+            if (selectedBoardId) {
+                boardPreviewImg.src = `${boardImagePath}T${parseInt(selectedBoardId) + 1}.webp`;
+            }
         });
 
         joinBtn.addEventListener('click', () => {
             const playerName = playerNameInput.value.trim();
+            const phoneNumber = playerPhoneInput.value.trim();
             const boardId = parseInt(boardSelect.value, 10);
-            if (!playerName) {
-                alert('Por favor, escribe tu nombre.');
+
+            if (!playerName || !phoneNumber || isNaN(boardId)) {
+                alert('Por favor, completa todos los campos.');
                 return;
             }
-            socket.emit('player:joinGame', { playerName, boardId });
+            socket.emit('player:joinGame', { playerName, phoneNumber, boardId });
         });
         
         socket.on('game:update', (gameState) => {
@@ -129,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             chosenBoardName.textContent = `Tablero #${myBoard.id + 1}`;
             playerBoardBg.src = `${boardImagePath}${myBoard.image}`;
 
-            // Create the 16 empty marker cells
             playerBoardMarkers.innerHTML = '';
             for (let i = 0; i < 16; i++) {
                 const cell = document.createElement('div');

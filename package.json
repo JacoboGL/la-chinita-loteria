@@ -1,5 +1,5 @@
 {
-  "name": "live-loteria-game",
+  "name": "la-chinita-lottery",
   "version": "1.0.0",
   "description": "A live multiplayer bingo-style game server.",
   "main": "server.js",
@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "express": "^4.19.2",
+    "papaparse": "^5.4.1",
     "socket.io": "^4.7.5"
   }
 }
