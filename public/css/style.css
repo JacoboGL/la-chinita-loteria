@@ -1,3 +1,5 @@
+/* Keep your existing styles, and add/modify these ones */
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f4f9;
@@ -5,9 +7,9 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* Changed to flex-start for better layout */
     padding: 2em;
-    margin-top: 3em;
+    margin-top: 1em;
 }
 
 #game-container {
@@ -15,9 +17,14 @@ body {
     flex-wrap: wrap;
     gap: 40px;
     align-items: flex-start;
+    justify-content: center;
 }
 
-/* Caller Area Styles */
+.hidden {
+    display: none !important;
+}
+
+/* Caller Area & Host View Styles */
 #caller-area {
     display: flex;
     flex-direction: column;
@@ -27,6 +34,7 @@ body {
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
     text-align: center;
+    min-width: 300px;
 }
 
 #drawn-card-display {
@@ -48,7 +56,7 @@ body {
     object-fit: contain;
 }
 
-#draw-button {
+button {
     padding: 12px 30px;
     font-size: 1.1em;
     font-weight: bold;
@@ -58,61 +66,155 @@ body {
     border: none;
     border-radius: 8px;
     transition: background-color 0.3s, transform 0.1s;
+    margin-top: 10px;
 }
 
-#draw-button:hover:not(:disabled) {
+button:hover:not(:disabled) {
     background-color: #ff65b0;
 }
 
-#draw-button:active:not(:disabled) {
+button:active:not(:disabled) {
     transform: scale(0.98);
 }
 
-#draw-button:disabled {
+button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
 }
 
-/* Bingo Board Styles */
-#bingo-board-container h2 {
-    text-align: center;
-    margin-top: 0;
-    color:#ff037e;
+/* Host's Drawn Cards Grid */
+.drawn-cards-view {
+    display: grid;
+    /* CHANGED: Updated to a 5x5 grid */
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 700px;
+    margin: auto;
+    background-color: rgba(255,255,255,0.5);
+    padding: 10px;
+    border-radius: 8px;
 }
 
-/* ✨ UPDATED BOARD STYLES */
-#bingo-board {
-    display: grid;
-    /* Changed to an 8x4 grid to fit 32 cards */
-    grid-template-columns: repeat(8, 1fr);
-    gap: 10px;
-    width: clamp(600px, 90vw, 900px); /* Adjusted width for the new layout */
-    padding: 10px;
+.drawn-cards-view .card-cell {
+    border-radius: 4px;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+}
+
+.drawn-cards-view .card-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#player-list {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+}
+
+#winner-notification {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 1.5em;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+/* --- Player View Styles --- */
+#player-view {
+    background-color: white;
+    padding: 30px;
     border-radius: 12px;
     box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-    background-color: #ffffff59;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
 }
 
-.bingo-cell {
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#join-game-form input, #join-game-form select {
+    display: block;
+    width: 80%;
+    margin: 15px auto;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* NEW: Board Preview Styles */
+#board-preview-container {
+    width: 80%;
+    max-width: 300px;
+    margin: 20px auto;
+    border: 3px solid #eee;
+    border-radius: 8px;
     overflow: hidden;
-    background-color: rgba(255, 255, 255, 0.1); 
-    /* Set an aspect ratio to keep cells proportional */
-    aspect-ratio: 3 / 4;
+    background-color: #fafafa;
 }
 
-/* The ::after overlay and .called styles have been removed as they are no longer needed */
+#board-preview-img {
+    width: 100%;
+    display: block;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+}
 
-.bingo-cell img {
+#chosen-board-name {
+    margin: -10px 0 15px 0;
+    font-size: 1.2em;
+    font-weight: normal;
+    color: #555;
+}
+
+
+.last-drawn-card-display {
+    width: 200px;
+    height: 200px;
+    margin: 15px auto;
+    border: 2px solid #eee;
+    border-radius: 8px;
+}
+.last-drawn-card-display img{
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+}
+
+.player-board-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 20px auto;
+}
+
+.player-board-grid .card-cell {
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 3/4;
+}
+
+.player-board-grid .card-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
 }
+
+/* Player card overlay for marked cards */
+.card-cell.marked::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: grayscale(100%);
+}
+
+

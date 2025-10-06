@@ -19,6 +19,10 @@
                 <select id="board-select">
                     <!-- Board options will be populated by JS -->
                 </select>
+                <!-- NEW: Board Preview -->
+                <div id="board-preview-container">
+                    <img id="board-preview-img" src="" alt="Vista previa del tablero">
+                </div>
                 <button id="join-btn">Unirse</button>
             </div>
 
@@ -35,6 +39,8 @@
             <!-- 3. Game Board View -->
             <div id="player-board-container" class="hidden">
                  <h2>Tu Tablero</h2>
+                 <!-- NEW: Chosen Board Name Display -->
+                 <h3 id="chosen-board-name"></h3>
                  <div id="player-board" class="player-board-grid">
                     <!-- Player's 4x4 board will be rendered here -->
                  </div>
