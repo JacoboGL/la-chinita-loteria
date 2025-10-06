@@ -120,7 +120,7 @@ io.on('connection', (socket) => {
 
     socket.on('player:joinGame', ({ playerName, phoneNumber, boardId }) => {
         if (!gameState.gameInProgress) {
-             socket.emit('error:gameNotStarted', 'The game has not started yet.');
+             socket.emit('error:gameNotStarted', 'No ha comenzado el juego.');
              return;
         }
         const chosenBoard = gameState.boardPool.find(b => b.id === boardId);
@@ -157,7 +157,7 @@ io.on('connection', (socket) => {
         if (socket.id === gameState.hostSocketId) {
             console.log('Host disconnected. Ending game.');
             resetGame();
-            io.emit('game:ended', 'The host has disconnected. The game is over.');
+            io.emit('game:ended', 'La lotería ha finalizado!');
         } else {
             if (gameState.players[socket.id]) {
                 delete gameState.players[socket.id];
