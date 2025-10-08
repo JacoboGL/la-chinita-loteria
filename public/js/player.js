@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('name');
     const phoneInput = document.getElementById('phone');
     const boardSelect = document.getElementById('board-select');
-    const boardPreview = document.getElementById('board-preview');
     
     // Game screen elements
     const chosenBoardName = document.getElementById('chosen-board-name');
@@ -69,13 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
     boardSelect.addEventListener('change', () => {
         const boardId = boardSelect.value;
         
-        // ✨ FIX: Find the board preview image element right when it's needed.
+        // ✨ FIX: Find both preview elements right when they are needed.
+        const boardPreview = document.getElementById('board-preview');
         const boardPreviewImage = document.getElementById('board-preview-image');
 
-        if (boardId && boardPreviewImage) {
+        if (boardId && boardPreviewImage && boardPreview) {
             boardPreviewImage.src = `/images/boards/T${boardId}.webp`;
             boardPreview.style.display = 'block';
-        } else {
+        } else if (boardPreview) {
             boardPreview.style.display = 'none';
         }
     });
