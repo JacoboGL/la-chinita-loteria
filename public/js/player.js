@@ -44,10 +44,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const joinScreen = document.getElementById('join-screen');
         const gameScreen = document.getElementById('game-screen');
         const chosenBoardName = document.getElementById('chosen-board-name');
+        const gameBoardImage = document.getElementById('game-board-image');
 
         if (joinScreen) joinScreen.style.display = 'none';
         if (gameScreen) gameScreen.style.display = 'flex';
         if (chosenBoardName) chosenBoardName.textContent = `Tablero #${data.boardId}`;
+        
+        // Set the board data and populate the grid.
+        currentBoardData = data.boardData;
+        if (currentBoardData && gameBoardImage) {
+            gameBoardImage.src = `/images/boards/T${data.boardId}.webp`;
+            populateMarkerGrid();
+        }
     });
     
     socket.on('player:error', (message) => {
@@ -91,18 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (name && phone && boardId) {
                 socket.emit('player:join', { name, phone, boardId });
-                
-                fetch('/boards.json')
-                    .then(res => res.json())
-                    .then(boards => {
-                        currentBoardData = boards.find(b => b.boardNumber == boardId);
-                        if (currentBoardData) {
-                            const gameBoardImage = document.getElementById('game-board-image');
-                            if (gameBoardImage) gameBoardImage.src = `/images/boards/T${boardId}.webp`;
-                            populateMarkerGrid();
-                        }
-                    });
-
             } else {
                 alert('Por favor, llena todos los campos.');
             }
