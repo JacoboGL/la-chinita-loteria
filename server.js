@@ -11,7 +11,7 @@ const server = http.createServer(app);
 // --- ✨ CORS CONFIGURATION ---
 const io = new Server(server, {
   cors: {
-    origin: ["https://host-loteria.lachinita.com/", "https://loteria.lachinita.com/"],
+    origin: ["https://loteria.lachinita.com/", "https://host-loteria.lachinita.com/"],
     methods: ["GET", "POST"]
   }
 });
