@@ -2,23 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // By leaving io() blank, it automatically connects to the domain
     // that the page is being served from.
     const socket = io();
-
-    const screens = {
-        join: document.getElementById('join-screen'),
-        game: document.getElementById('game-screen')
-    };
-    const joinForm = document.getElementById('join-form');
-    const nameInput = document.getElementById('name');
-    const phoneInput = document.getElementById('phone');
-    const boardSelect = document.getElementById('board-select');
-    
-    // Game screen elements
-    const chosenBoardName = document.getElementById('chosen-board-name');
-    const gameBoardDisplay = document.getElementById('game-board-display');
-    const gameBoardImage = document.getElementById('game-board-image');
-    const loteriaButton = document.getElementById('loteria-button');
-    const markerGrid = document.getElementById('marker-grid');
-
     let currentBoardData = null;
 
     // --- SOCKET.IO EVENT LISTENERS ---
@@ -27,6 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('game:state', (state) => {
+        const boardSelect = document.getElementById('board-select');
+        if (!boardSelect) return; // Guard clause
+
         if (!state.gameInProgress) {
             alert('Waiting for the host to start a new game.');
             return;
@@ -55,9 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('player:joined', (data) => {
-        screens.join.style.display = 'none';
-        screens.game.style.display = 'flex';
-        chosenBoardName.textContent = `Tablero #${data.boardId}`;
+        const joinScreen = document.getElementById('join-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const chosenBoardName = document.getElementById('chosen-board-name');
+
+        if (joinScreen) joinScreen.style.display = 'none';
+        if (gameScreen) gameScreen.style.display = 'flex';
+        if (chosenBoardName) chosenBoardName.textContent = `Tablero #${data.boardId}`;
     });
     
     socket.on('player:error', (message) => {
@@ -65,52 +55,73 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- DOM EVENT LISTENERS ---
-    boardSelect.addEventListener('change', () => {
-        const boardId = boardSelect.value;
-        
-        // ✨ FIX: Find both preview elements right when they are needed.
-        const boardPreview = document.getElementById('board-preview');
-        const boardPreviewImage = document.getElementById('board-preview-image');
+    const boardSelect = document.getElementById('board-select');
+    if (boardSelect) {
+        boardSelect.addEventListener('change', () => {
+            const boardId = boardSelect.value;
+            const boardPreview = document.getElementById('board-preview');
+            const boardPreviewImage = document.getElementById('board-preview-image');
 
-        if (boardId && boardPreviewImage && boardPreview) {
-            boardPreviewImage.src = `/images/boards/T${boardId}.webp`;
-            boardPreview.style.display = 'block';
-        } else if (boardPreview) {
-            boardPreview.style.display = 'none';
-        }
-    });
+            if (boardId && boardPreviewImage && boardPreview) {
+                boardPreviewImage.src = `/images/boards/T${boardId}.webp`;
+                boardPreview.style.display = 'block';
+            } else if (boardPreview) {
+                boardPreview.style.display = 'none';
+            }
+        });
+    }
 
-    joinForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = nameInput.value.trim();
-        const phone = phoneInput.value.trim();
-        const boardId = boardSelect.value;
+    const joinForm = document.getElementById('join-form');
+    if (joinForm) {
+        joinForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('name');
+            const phoneInput = document.getElementById('phone');
+            const boardSelectInput = document.getElementById('board-select');
 
-        if (name && phone && boardId) {
-            socket.emit('player:join', { name, phone, boardId });
-            
-            fetch('/boards.json')
-                .then(res => res.json())
-                .then(boards => {
-                    currentBoardData = boards.find(b => b.boardNumber == boardId);
-                    if(currentBoardData) {
-                        gameBoardImage.src = `/images/boards/T${boardId}.webp`;
-                        populateMarkerGrid();
-                    }
-                });
+            if (!nameInput || !phoneInput || !boardSelectInput) {
+                console.error("Could not find all form inputs!");
+                alert('Hubo un error con el formulario. Por favor, refresca la página.');
+                return;
+            }
 
-        } else {
-            alert('Por favor, llena todos los campos.');
-        }
-    });
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const boardId = boardSelectInput.value;
+
+            if (name && phone && boardId) {
+                socket.emit('player:join', { name, phone, boardId });
+                
+                fetch('/boards.json')
+                    .then(res => res.json())
+                    .then(boards => {
+                        currentBoardData = boards.find(b => b.boardNumber == boardId);
+                        if (currentBoardData) {
+                            const gameBoardImage = document.getElementById('game-board-image');
+                            if (gameBoardImage) gameBoardImage.src = `/images/boards/T${boardId}.webp`;
+                            populateMarkerGrid();
+                        }
+                    });
+
+            } else {
+                alert('Por favor, llena todos los campos.');
+            }
+        });
+    }
     
-    loteriaButton.addEventListener('click', () => {
-        socket.emit('player:loteria');
-        loteriaButton.disabled = true;
-        loteriaButton.textContent = '¡LOTERÍA GRITADA!';
-    });
+    const loteriaButton = document.getElementById('loteria-button');
+    if (loteriaButton) {
+        loteriaButton.addEventListener('click', () => {
+            socket.emit('player:loteria');
+            loteriaButton.disabled = true;
+            loteriaButton.textContent = '¡LOTERÍA GRITADA!';
+        });
+    }
 
     function populateMarkerGrid() {
+        const markerGrid = document.getElementById('marker-grid');
+        if (!markerGrid) return;
+
         markerGrid.innerHTML = '';
         if (!currentBoardData) return;
         
