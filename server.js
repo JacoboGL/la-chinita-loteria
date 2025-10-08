@@ -11,7 +11,7 @@ const server = http.createServer(app);
 // --- CORS Configuration ---
 const io = new Server(server, {
   cors: {
-    origin: ["https://play.yourdomain.com", "https://host.yourdomain.com", "http://localhost:3000"],
+    origin: ["https://loteria.lachinita.com", "https://host-loteria.lachinita.com", "http://localhost:3000"],
     methods: ["GET", "POST"]
   }
 });
