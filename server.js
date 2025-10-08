@@ -1,40 +1,43 @@
-// server.js - The heart of your live game
-
-// 1. SETUP
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require("socket.io");
 const fs = require('fs');
-const Papa = require('papaparse'); // CSV library
+const path = require('path');
+const Papa = require('papaparse');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
 
-const PORT = process.env.PORT || 3000;
+// --- ✨ CORS CONFIGURATION ---
+const io = new Server(server, {
+  cors: {
+    origin: ["https://host-loteria.lachinita.com/", "https://loteria.lachinita.com/"],
+    methods: ["GET", "POST"]
+  }
+});
 
+const PORT = 3000;
+
+// Serve static files from the "public" directory
 app.use(express.static('public'));
 
-// --- GAME STATE & LOGIC ---
-
 let gameState = {
-    gameId: null, // To identify the current game session
-    hostSocketId: null,
-    players: {},
-    gameInProgress: false,
-    fullDeck: [],
+    deck: [],
     drawnCards: [],
-    boardPool: [],
+    players: {}, // Using object to store players by ID
+    boards: [],
+    gameInProgress: false,
 };
 
-const ALL_CARD_NAMES = [
-    '1.webp', '2.webp', '3.webp', '4.webp', '5.webp', '6.webp', '7.webp', '8.webp',
-    '9.webp', '10.webp', '11.webp', '12.webp', '13.webp', '14.webp', '15.webp', '16.webp',
-    '17.webp', '18.webp', '19.webp', '20.webp', '21.webp', '22.webp', '23.webp', '24.webp',
-    '25.webp', '26.webp', '27.webp', '28.webp', '29.webp', '30.webp', '31.webp', '32.webp'
-];
+// --- LOGGING SETUP ---
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir);
+}
+const logFilePath = path.join(logsDir, `game_session_${new Date().toISOString().replace(/:/g, '-')}.csv`);
+const logHeaders = ['Timestamp', 'PlayerName', 'PhoneNumber', 'BoardNumber', 'Won'];
+fs.writeFileSync(logFilePath, Papa.unparse([logHeaders]) + '\r\n');
 
-// --- HELPER FUNCTIONS ---
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -44,133 +47,127 @@ function shuffle(array) {
     return array;
 }
 
-function generateBoardPool() {
-    try {
-        const boardsData = fs.readFileSync('public/boards.json');
-        return JSON.parse(boardsData);
-    } catch (error) {
-        console.error("Error reading or parsing boards.json:", error);
-        return [];
-    }
-}
-
-/** ✨ NEW: Generates a CSV file from the current player data */
-function generateCsvForCurrentGame() {
-    if (Object.keys(gameState.players).length === 0) {
-        return; // Don't generate an empty file
-    }
-    const playerData = Object.values(gameState.players).map(p => ({
-        Nombre: p.name,
-        'Numero de Telefono': p.phone,
-        'Tablero #': p.board.id + 1,
-        Gano: p.won
-    }));
-
-    const csv = Papa.unparse(playerData);
-    const fileName = `player_log_${gameState.gameId}.csv`;
+function createNewGame() {
+    console.log("Creating a new game...");
+    const allCards = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'boards.json'), 'utf8'));
+    const allCardNames = [...new Set(allCards.flatMap(board => board.cards.map(card => card.id)))];
     
-    // Create logs directory if it doesn't exist
-    if (!fs.existsSync('logs')) {
-        fs.mkdirSync('logs');
-    }
-    
-    fs.writeFileSync(`logs/${fileName}`, csv, 'utf-8');
-    console.log(`Player data saved to ${fileName}`);
-}
-
-
-function resetGame() {
-    console.log('Resetting game state.');
-    const gameTimestamp = new Date().toISOString().replace(/:/g, '-').slice(0, 19);
     gameState = {
-        gameId: gameTimestamp,
-        hostSocketId: null,
-        players: {},
-        gameInProgress: false,
-        fullDeck: shuffle([...ALL_CARD_NAMES]),
+        deck: shuffle([...allCardNames]),
         drawnCards: [],
-        boardPool: generateBoardPool(),
+        players: {},
+        boards: Array.from({ length: 32 }, (_, i) => ({ id: i + 1, assigned: false })),
+        gameInProgress: true,
     };
+
+    // Clear previous logs and reset file
+    fs.writeFileSync(logFilePath, Papa.unparse([logHeaders]) + '\r\n');
+    console.log("New game created and log file reset.");
 }
 
-resetGame();
-
-// 2. REAL-TIME COMMUNICATION
 io.on('connection', (socket) => {
-    console.log(`New user connected: ${socket.id}`);
+    console.log(`A user connected: ${socket.id}`);
 
+    // --- HOST EVENTS ---
     socket.on('host:createGame', () => {
-        if (gameState.hostSocketId) {
-            socket.emit('error:gameInProgress', 'A game is already being hosted.');
-            return;
-        }
-        resetGame();
-        gameState.hostSocketId = socket.id;
-        gameState.gameInProgress = true;
-        console.log(`Game created by host: ${socket.id} with ID: ${gameState.gameId}`);
-        io.emit('game:update', gameState);
+        createNewGame();
+        socket.join('host'); // The host joins a special room
+        io.emit('game:state', { gameInProgress: gameState.gameInProgress, boards: gameState.boards });
+        console.log("Host created a new game.");
     });
 
     socket.on('host:drawCard', () => {
-        if (socket.id !== gameState.hostSocketId || gameState.fullDeck.length === 0) return;
-        const drawnCard = gameState.fullDeck.pop();
-        gameState.drawnCards.push(drawnCard);
-        io.emit('game:update', gameState);
+        if (gameState.deck.length > 0) {
+            const card = gameState.deck.pop();
+            gameState.drawnCards.push(card);
+            io.emit('game:cardDrawn', card);
+            console.log(`Card drawn: ${card}`);
+        }
     });
 
-    socket.on('player:joinGame', ({ playerName, phoneNumber, boardId }) => {
+    // --- PLAYER EVENTS ---
+    socket.on('player:join', (data) => {
         if (!gameState.gameInProgress) {
-             socket.emit('error:gameNotStarted', 'No ha comenzado el juego.');
-             return;
+            socket.emit('player:error', 'No hay juegos activos en el momento.');
+            return;
         }
-        const chosenBoard = gameState.boardPool.find(b => b.id === boardId);
-        gameState.players[socket.id] = {
-            id: socket.id,
-            name: playerName,
-            phone: phoneNumber,
-            board: chosenBoard,
-            won: 'No' // Initialize win status
-        };
-        console.log(`Player ${playerName} (${phoneNumber}) joined with board ${boardId}.`);
-        generateCsvForCurrentGame(); // Update CSV when a new player joins
-        io.emit('game:update', gameState);
-    });
-    
-    socket.on('player:claimWin', () => {
-        const player = gameState.players[socket.id];
-        if (!player) return;
+        
+        const boardId = parseInt(data.boardId, 10);
+        const board = gameState.boards.find(b => b.id === boardId);
 
-        const boardCardIds = new Set(player.board.cards.map(c => c.id));
-        const drawnCardsSet = new Set(gameState.drawnCards);
-        const allCardsMatch = [...boardCardIds].every(cardId => drawnCardsSet.has(cardId));
+        if (board && !board.assigned) {
+            board.assigned = true;
+            gameState.players[socket.id] = {
+                id: socket.id,
+                name: data.name,
+                phone: data.phone,
+                boardId: boardId
+            };
+            
+            const logEntry = {
+                Timestamp: new Date().toISOString(),
+                PlayerName: data.name,
+                PhoneNumber: data.phone,
+                BoardNumber: boardId,
+                Won: 'no'
+            };
+            fs.appendFileSync(logFilePath, Papa.unparse([logEntry], { header: false }) + '\r\n');
 
-        if (allCardsMatch) {
-            console.log(`Win confirmed for player: ${player.name}`);
-            player.won = 'Yes'; // Update win status
-            generateCsvForCurrentGame(); // Update CSV with the winner
-            io.to(gameState.hostSocketId).emit('game:playerWon', player.name);
-        }
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`);
-        if (socket.id === gameState.hostSocketId) {
-            console.log('Host disconnected. Ending game.');
-            resetGame();
-            io.emit('game:ended', 'La lotería ha finalizado!');
+            io.emit('game:state', { gameInProgress: gameState.gameInProgress, boards: gameState.boards });
+            io.to('host').emit('game:playerJoined', gameState.players[socket.id]);
+            socket.emit('player:joined', { boardId: boardId });
+            console.log(`Player ${data.name} joined with board #${boardId}`);
         } else {
-            if (gameState.players[socket.id]) {
-                delete gameState.players[socket.id];
-                generateCsvForCurrentGame(); // Update CSV if a player leaves
-                io.emit('game:update', gameState);
+            socket.emit('player:error', 'Este tablero no se encuentra disponible.');
+        }
+    });
+
+    socket.on('player:loteria', () => {
+        const player = gameState.players[socket.id];
+        if (player) {
+            console.log(`Player ${player.name} called Loteria!`);
+            io.to('host').emit('game:playerWon', player);
+
+            // Update CSV Log for winning player
+            const csvData = fs.readFileSync(logFilePath, 'utf8');
+            const parsedData = Papa.parse(csvData, { header: true }).data;
+            let updated = false;
+            const updatedData = parsedData.map(row => {
+                if (row.PlayerName === player.name && row.BoardNumber == player.boardId) {
+                    row.Won = 'yes';
+                    updated = true;
+                }
+                return row;
+            });
+
+            if(updated) {
+                 fs.writeFileSync(logFilePath, Papa.unparse(updatedData) + '\r\n');
+                 console.log(`Updated log for winner: ${player.name}`);
             }
         }
     });
     
-    socket.emit('game:boardPool', gameState.boardPool);
+    // --- GENERAL EVENTS ---
+    socket.on('disconnect', () => {
+        const player = gameState.players[socket.id];
+        if (player) {
+            const board = gameState.boards.find(b => b.id === player.boardId);
+            if (board) {
+                board.assigned = false; // Free up the board
+            }
+            delete gameState.players[socket.id];
+            io.emit('game:state', { gameInProgress: gameState.gameInProgress, boards: gameState.boards });
+            io.to('host').emit('game:playerLeft', player.id);
+            console.log(`Player ${player.name} disconnected. Board #${player.boardId} is now free.`);
+        } else {
+            console.log(`A user disconnected: ${socket.id}`);
+        }
+    });
+
+    // Send initial state to newly connected client
+    socket.emit('game:state', { gameInProgress: gameState.gameInProgress, boards: gameState.boards });
 });
 
-// 3. START THE SERVER
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
