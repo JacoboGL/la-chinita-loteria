@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // By leaving io() blank, it automatically connects to the domain
-    // that the page is being served from. This is the correct way for a live site.
+    // that the page is being served from.
     const socket = io();
 
     const screens = {
@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const phoneInput = document.getElementById('phone');
     const boardSelect = document.getElementById('board-select');
     const boardPreview = document.getElementById('board-preview');
-    const boardPreviewImage = document.getElementById('board-preview-image');
     
     // Game screen elements
     const chosenBoardName = document.getElementById('chosen-board-name');
@@ -29,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('game:state', (state) => {
-        console.log('Received game state:', state);
         if (!state.gameInProgress) {
             alert('Waiting for the host to start a new game.');
             return;
@@ -46,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('game:cardDrawn', (cardId) => {
-        console.log(`Card drawn: ${cardId}`);
         if (!currentBoardData) return;
 
         const cardOnBoard = currentBoardData.cards.find(c => c.id === cardId);
@@ -60,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('player:joined', (data) => {
         screens.join.style.display = 'none';
-        screens.game.style.display = 'flex'; // Use flex to match responsive layout
+        screens.game.style.display = 'flex';
         chosenBoardName.textContent = `Tablero #${data.boardId}`;
     });
     
@@ -71,8 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM EVENT LISTENERS ---
     boardSelect.addEventListener('change', () => {
         const boardId = boardSelect.value;
-        if (boardId) {
-            boardPreviewImage.src = `images/boards/T${boardId}.webp`;
+        
+        // ✨ FIX: Find the board preview image element right when it's needed.
+        const boardPreviewImage = document.getElementById('board-preview-image');
+
+        if (boardId && boardPreviewImage) {
+            boardPreviewImage.src = `/images/boards/T${boardId}.webp`;
             boardPreview.style.display = 'block';
         } else {
             boardPreview.style.display = 'none';
@@ -88,13 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (name && phone && boardId) {
             socket.emit('player:join', { name, phone, boardId });
             
-            // Fetch board data to prepare for marking cards
             fetch('/boards.json')
                 .then(res => res.json())
                 .then(boards => {
                     currentBoardData = boards.find(b => b.boardNumber == boardId);
                     if(currentBoardData) {
-                        gameBoardImage.src = `images/boards/T${boardId}.webp`;
+                        gameBoardImage.src = `/images/boards/T${boardId}.webp`;
                         populateMarkerGrid();
                     }
                 });
@@ -125,3 +125,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
