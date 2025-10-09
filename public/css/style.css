@@ -185,6 +185,16 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     box-sizing: border-box;
 }
 
+.marker-cell { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    cursor: pointer;
+}
+.marker { font-size: 5em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; background-color: #0000004a; width: 100%; }
+@keyframes fadeIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 0.9; } }
+
+
 .marker-cell { display: flex; align-items: center; justify-content: center; }
 .marker { font-size: 5em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; background-color: #0000004a; width: 100%; }
 @keyframes fadeIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 0.9; } }

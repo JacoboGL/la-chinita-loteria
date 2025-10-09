@@ -1,5 +1,3 @@
-// app.js - Client-side logic for host and players
-
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const imageFolderPath = 'images/Deck/';
@@ -66,11 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('player-view')) {
         const joinForm = document.getElementById('join-game-form');
         const playerBoardContainer = document.getElementById('player-board-container');
-        const playerNameInput = document.getElementById('player-name');
-        const playerPhoneInput = document.getElementById('player-phone'); // New phone input
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
-        const boardPreviewImg = document.getElementById('board-preview-img');
         const lastDrawnImg = document.getElementById('last-drawn-img');
         const playerBoardBg = document.getElementById('player-board-bg');
         const playerBoardMarkers = document.getElementById('player-board-markers');
@@ -91,12 +86,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         boardSelect.addEventListener('change', () => {
             const selectedBoardId = boardSelect.value;
+            const boardPreviewImg = document.getElementById('board-preview-img');
             if (selectedBoardId) {
                 boardPreviewImg.src = `${boardImagePath}T${parseInt(selectedBoardId) + 1}.webp`;
             }
         });
 
         joinBtn.addEventListener('click', () => {
+            const playerNameInput = document.getElementById('player-name');
+            const playerPhoneInput = document.getElementById('player-phone');
             const playerName = playerNameInput.value.trim();
             const phoneNumber = playerPhoneInput.value.trim();
             const boardId = parseInt(boardSelect.value, 10);
@@ -115,12 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupPlayerBoard();
             }
             
-            if (myBoard) {
-                updateMarkers(gameState.drawnCards);
-                if (gameState.drawnCards.length > 0) {
-                    const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
-                    lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
-                }
+            if (myBoard && gameState.drawnCards.length > 0) {
+                const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
+                lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
             }
         });
 
@@ -135,30 +130,37 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < 16; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'marker-cell';
+                // ✨ NEW: Add event listener for manual marking
+                cell.addEventListener('click', toggleMark);
                 playerBoardMarkers.appendChild(cell);
             }
         }
 
-        function updateMarkers(drawnCards) {
-            const drawnCardsSet = new Set(drawnCards);
-            let markedCount = 0;
+        /** ✨ NEW: Toggles a marker on a cell when clicked */
+        function toggleMark(event) {
+            const cell = event.currentTarget;
+            const existingMarker = cell.querySelector('.marker');
 
-            myBoard.cards.forEach(card => {
-                if (drawnCardsSet.has(card.id)) {
-                    markedCount++;
-                    const index = card.pos.row * 4 + card.pos.col;
-                    const cell = playerBoardMarkers.children[index];
-                    if (cell && !cell.hasChildNodes()) {
-                        const marker = document.createElement('div');
-                        marker.className = 'marker';
-                        marker.textContent = 'X';
-                        cell.appendChild(marker);
-                    }
-                }
-            });
+            if (existingMarker) {
+                existingMarker.remove(); // Un-mark the cell
+            } else {
+                const marker = document.createElement('div');
+                marker.className = 'marker';
+                marker.textContent = 'X';
+                cell.appendChild(marker); // Mark the cell
+            }
+            
+            // Check if the Loteria button should be enabled after every click
+            checkWinCondition();
+        }
 
-            if (markedCount === myBoard.cards.length && myBoard.cards.length > 0) {
+        /** ✨ NEW: Checks if all 16 cells are marked */
+        function checkWinCondition() {
+            const markedCells = playerBoardMarkers.querySelectorAll('.marker').length;
+            if (markedCount === 16) {
                 claimWinBtn.disabled = false;
+            } else {
+                claimWinBtn.disabled = true;
             }
         }
 
@@ -169,4 +171,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
