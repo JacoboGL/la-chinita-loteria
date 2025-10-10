@@ -1,3 +1,5 @@
+// app.js - Client-side logic for host and players
+
 document.addEventListener('DOMContentLoaded', () => {
     const socket = io();
     const imageFolderPath = 'images/Deck/';
@@ -73,6 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const chosenBoardName = document.getElementById('chosen-board-name');
         
         let myBoard = null;
+        // ✨ NEW: Keep a local copy of the drawn cards for verification
+        let drawnCards = [];
 
         socket.on('game:boardPool', (boardPool) => {
             boardSelect.innerHTML = '<option value="" disabled selected>Elige un tablero</option>';
@@ -113,9 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 setupPlayerBoard();
             }
             
-            if (myBoard && gameState.drawnCards.length > 0) {
-                const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
-                lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
+            if (myBoard) {
+                // ✨ UPDATED: Store the latest list of drawn cards
+                drawnCards = gameState.drawnCards;
+                if (drawnCards.length > 0) {
+                    const lastCard = drawnCards[drawnCards.length - 1];
+                    lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
+                }
+                // ✨ NEW: Check win condition every time a new card is drawn
+                checkWinCondition();
             }
         });
 
@@ -130,34 +140,38 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < 16; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'marker-cell';
-                // ✨ NEW: Add event listener for manual marking
                 cell.addEventListener('click', toggleMark);
                 playerBoardMarkers.appendChild(cell);
             }
         }
 
-        /** ✨ NEW: Toggles a marker on a cell when clicked */
         function toggleMark(event) {
             const cell = event.currentTarget;
-            const existingMarker = cell.querySelector('.marker');
-
-            if (existingMarker) {
-                existingMarker.remove(); // Un-mark the cell
+            if (cell.querySelector('.marker')) {
+                cell.innerHTML = ''; // Un-mark
             } else {
                 const marker = document.createElement('div');
                 marker.className = 'marker';
                 marker.textContent = 'X';
-                cell.appendChild(marker); // Mark the cell
+                cell.appendChild(marker); // Mark
             }
-            
-            // Check if the Loteria button should be enabled after every click
             checkWinCondition();
         }
 
-        /** ✨ NEW: Checks if all 16 cells are marked */
+        /** ✨ REWRITTEN: This function now checks both player marks and server-drawn cards */
         function checkWinCondition() {
-            const markedCells = playerBoardMarkers.querySelectorAll('.marker').length;
-            if (markedCount === 16) {
+            if (!myBoard) return;
+
+            // Condition 1: Count how many squares the player has manually marked.
+            const manuallyMarkedCount = playerBoardMarkers.querySelectorAll('.marker').length;
+
+            // Condition 2: Check if all cards on the player's board have been drawn by the host.
+            const boardCardIds = new Set(myBoard.cards.map(c => c.id));
+            const drawnCardsSet = new Set(drawnCards);
+            const allCardsAreDrawn = [...boardCardIds].every(cardId => drawnCardsSet.has(cardId));
+
+            // The button is only enabled if the player has marked all 16 AND all 16 have been drawn.
+            if (manuallyMarkedCount === 16 && allCardsAreDrawn) {
                 claimWinBtn.disabled = false;
             } else {
                 claimWinBtn.disabled = true;
@@ -171,3 +185,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+

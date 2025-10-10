@@ -172,15 +172,15 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 #player-board-markers {
     position: absolute;
-    top: -27px;
+    top: 13px;
     left: 0;
     width: 100%;
-    height: 102%;
+    height: 85%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     /* These values may need manual tweaking to perfectly align with your board image design */
-    padding: 14% 0%; 
+    padding: 0% 0%; 
     gap: 0% 0%;
     box-sizing: border-box;
 }
@@ -196,11 +196,29 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
 
 .marker-cell { display: flex; align-items: center; justify-content: center; }
-.marker { font-size: 5em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; background-color: #0000004a; width: 100%; }
+.marker { font-size: 3em; color: #ff037e; font-weight: bold; animation: fadeIn 0.3s; background-color: #0000004a; width: 100%; height: 100%; align-content: center;}
 @keyframes fadeIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 0.9; } }
 
 /* --- ✨ RESPONSIVE DESIGN --- */
 /* For tablets and desktops */
+
+@media (min-width:580px ) {
+    #player-board-markers {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    /* These values may need manual tweaking to perfectly align with your board image design */
+    padding: 12% 0%; 
+    gap: 0% 0%;
+    box-sizing: border-box;
+}
+}
+
 @media (min-width: 768px) {
     #game-container {
         flex-direction: row;
