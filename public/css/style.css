@@ -197,7 +197,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 /* --- ✨ RESPONSIVE DESIGN --- */
 /* For tablets and desktops */
 
-@media (min-width: 570px) and (max-width: 767){
+@media (min-width: 570px) and (max-width: 767px){
     #player-board-markers {
     position: absolute;
     top: -24px;
