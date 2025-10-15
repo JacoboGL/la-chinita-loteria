@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         socket.on('game:playerWon', (playerName) => {
-            winnerNotification.textContent = `🎉 ¡${playerName} tiene Lotería! 🎉`;
+            winnerNotification.textContent = `🎉 ¡${playerName} - ${player.phone} tiene Lotería! 🎉`;
             winnerNotification.classList.remove('hidden');
             drawButton.disabled = true;
         });
