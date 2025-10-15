@@ -148,7 +148,7 @@ io.on('connection', (socket) => {
             console.log(`Win confirmed for player: ${player.name}`);
             player.won = 'Yes'; // Update win status
             generateCsvForCurrentGame(); // Update CSV with the winner
-            io.to(gameState.hostSocketId).emit('game:playerWon', player.name);
+            io.to(gameState.hostSocketId).emit('game:playerWon', player);
         }
     });
 
