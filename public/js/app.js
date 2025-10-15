@@ -67,11 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const joinForm = document.getElementById('join-game-form');
         const playerBoardContainer = document.getElementById('player-board-container');
         const playerNameInput = document.getElementById('player-name');
-        const playerPhoneInput = document.getElementById('player-phone'); // New phone input
+        const playerPhoneInput = document.getElementById('player-phone');
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
         const boardPreviewImg = document.getElementById('board-preview-img');
-        const lastDrawnImg = document.getElementById('last-drawn-img');
         const playerBoardBg = document.getElementById('player-board-bg');
         const playerBoardMarkers = document.getElementById('player-board-markers');
         const claimWinBtn = document.getElementById('claim-win-btn');
@@ -116,11 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (myBoard) {
+                // ✨ UPDATED: Call the new function to populate the history grid
+                updateDrawnCardsHistory(gameState.drawnCards);
                 updateMarkers(gameState.drawnCards);
-                if (gameState.drawnCards.length > 0) {
-                    const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
-                    lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
-                }
             }
         });
 
@@ -136,6 +133,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cell = document.createElement('div');
                 cell.className = 'marker-cell';
                 playerBoardMarkers.appendChild(cell);
+            }
+        }
+
+        /** ✨ NEW: This function updates the 3x1 card history grid */
+        function updateDrawnCardsHistory(allDrawnCards) {
+            const historyGrid = document.getElementById('drawn-cards-history-grid');
+            if (!historyGrid) return;
+            
+            historyGrid.innerHTML = ''; // Clear the grid first
+            
+            // Get the last 3 cards from the array
+            const lastThreeCards = allDrawnCards.slice(-3);
+
+            // Create the card cells and add them to the grid
+            for (let i = 0; i < 3; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'history-card-cell';
+                
+                // Check if a card exists for this slot before creating an image
+                if (lastThreeCards[i]) {
+                    const img = document.createElement('img');
+                    img.src = `${imageFolderPath}${lastThreeCards[i]}`;
+                    cell.appendChild(img);
+                }
+                historyGrid.appendChild(cell);
             }
         }
 
