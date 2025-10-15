@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
             playerList.innerHTML = '';
             Object.values(gameState.players).forEach(player => {
                 const li = document.createElement('li');
-                li.textContent = `${player.name} (Tablero #${player.board.id + 1})`;
+                // ✨ UPDATED: Display player's phone number
+                li.textContent = `${player.name} - ${player.phone} (Tablero #${player.board.id + 1})`;
                 playerList.appendChild(li);
             });
         });
@@ -66,17 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('player-view')) {
         const joinForm = document.getElementById('join-game-form');
         const playerBoardContainer = document.getElementById('player-board-container');
-        const playerNameInput = document.getElementById('player-name');
-        const playerPhoneInput = document.getElementById('player-phone');
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
-        const boardPreviewImg = document.getElementById('board-preview-img');
         const playerBoardBg = document.getElementById('player-board-bg');
         const playerBoardMarkers = document.getElementById('player-board-markers');
         const claimWinBtn = document.getElementById('claim-win-btn');
         const chosenBoardName = document.getElementById('chosen-board-name');
         
         let myBoard = null;
+        let drawnCards = [];
 
         socket.on('game:boardPool', (boardPool) => {
             boardSelect.innerHTML = '<option value="" disabled selected>Elige un tablero</option>';
@@ -90,12 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         boardSelect.addEventListener('change', () => {
             const selectedBoardId = boardSelect.value;
+            const boardPreviewImg = document.getElementById('board-preview-img');
             if (selectedBoardId) {
                 boardPreviewImg.src = `${boardImagePath}T${parseInt(selectedBoardId) + 1}.webp`;
             }
         });
 
         joinBtn.addEventListener('click', () => {
+            const playerNameInput = document.getElementById('player-name');
+            const playerPhoneInput = document.getElementById('player-phone');
             const playerName = playerNameInput.value.trim();
             const phoneNumber = playerPhoneInput.value.trim();
             const boardId = parseInt(boardSelect.value, 10);
@@ -115,9 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (myBoard) {
-                // ✨ UPDATED: Call the new function to populate the history grid
-                updateDrawnCardsHistory(gameState.drawnCards);
-                updateMarkers(gameState.drawnCards);
+                drawnCards = gameState.drawnCards;
+                updateDrawnCardsHistory(drawnCards);
+                // ✨ REVERTED: We no longer auto-mark, but we check if a win is possible
+                checkWinCondition();
             }
         });
 
@@ -132,26 +135,22 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < 16; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'marker-cell';
+                // ✨ REVERTED: Add event listener for manual marking
+                cell.addEventListener('click', toggleMark);
                 playerBoardMarkers.appendChild(cell);
             }
         }
-
-        /** ✨ NEW: This function updates the 3x1 card history grid */
+        
         function updateDrawnCardsHistory(allDrawnCards) {
             const historyGrid = document.getElementById('drawn-cards-history-grid');
             if (!historyGrid) return;
             
-            historyGrid.innerHTML = ''; // Clear the grid first
-            
-            // Get the last 3 cards from the array
+            historyGrid.innerHTML = '';
             const lastThreeCards = allDrawnCards.slice(-3);
 
-            // Create the card cells and add them to the grid
             for (let i = 0; i < 3; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'history-card-cell';
-                
-                // Check if a card exists for this slot before creating an image
                 if (lastThreeCards[i]) {
                     const img = document.createElement('img');
                     img.src = `${imageFolderPath}${lastThreeCards[i]}`;
@@ -161,26 +160,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        function updateMarkers(drawnCards) {
+        /** ✨ REVERTED: Toggles a marker on a cell when clicked */
+        function toggleMark(event) {
+            const cell = event.currentTarget;
+            if (cell.querySelector('.marker')) {
+                cell.innerHTML = ''; // Un-mark
+            } else {
+                const marker = document.createElement('div');
+                marker.className = 'marker';
+                marker.textContent = 'X';
+                cell.appendChild(marker); // Mark
+            }
+            checkWinCondition();
+        }
+
+        /** ✨ REVERTED & UPDATED: Checks both player marks and server-drawn cards */
+        function checkWinCondition() {
+            if (!myBoard) return;
+
+            // Condition 1: Count how many squares the player has manually marked.
+            const manuallyMarkedCount = playerBoardMarkers.querySelectorAll('.marker').length;
+
+            // Condition 2: Check if all cards on the player's board have been drawn by the host.
+            const boardCardIds = new Set(myBoard.cards.map(c => c.id));
             const drawnCardsSet = new Set(drawnCards);
-            let markedCount = 0;
+            const allCardsAreDrawn = [...boardCardIds].every(cardId => drawnCardsSet.has(cardId));
 
-            myBoard.cards.forEach(card => {
-                if (drawnCardsSet.has(card.id)) {
-                    markedCount++;
-                    const index = card.pos.row * 4 + card.pos.col;
-                    const cell = playerBoardMarkers.children[index];
-                    if (cell && !cell.hasChildNodes()) {
-                        const marker = document.createElement('div');
-                        marker.className = 'marker';
-                        marker.textContent = 'X';
-                        cell.appendChild(marker);
-                    }
-                }
-            });
-
-            if (markedCount === myBoard.cards.length && myBoard.cards.length > 0) {
+            // The button is only enabled if the player has marked all 16 AND all 16 have been drawn.
+            if (manuallyMarkedCount === 16 && allCardsAreDrawn) {
                 claimWinBtn.disabled = false;
+            } else {
+                claimWinBtn.disabled = true;
             }
         }
 
@@ -191,4 +201,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
