@@ -14,7 +14,6 @@
                 <img src="images/Envolvente_Rosa.png" alt="">
                 <h1>Bienvenido!</h1>
                 <input type="text" id="player-name" placeholder="Tu Nombre" required>
-                <!-- ✨ NEW: Phone number field -->
                 <input type="tel" id="player-phone" placeholder="Número de Teléfono" required>
                 <select id="board-select"></select>
                 <!-- Board Preview -->
@@ -32,9 +31,20 @@
 
             <!-- Main Player Board Display -->
             <div id="player-board-container" class="hidden">
-                <h2>Última Carta Sorteada</h2>
-                <div class="last-drawn-card-display">
-                    <img id="last-drawn-img" src="" alt="">
+                <!-- ✨ UPDATED: Section for displaying previous and last card -->
+                <div class="drawn-cards-history">
+                    <div>
+                        <h2>Carta Anterior</h2>
+                        <div class="previous-card-display">
+                            <img id="previous-drawn-img" src="" alt="">
+                        </div>
+                    </div>
+                    <div>
+                        <h2>Última Carta</h2>
+                        <div class="last-drawn-card-display">
+                            <img id="last-drawn-img" src="" alt="">
+                        </div>
+                    </div>
                 </div>
                 
                 <h2 id="chosen-board-name"></h2>

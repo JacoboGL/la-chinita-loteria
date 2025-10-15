@@ -66,8 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('player-view')) {
         const joinForm = document.getElementById('join-game-form');
         const playerBoardContainer = document.getElementById('player-board-container');
+        const playerNameInput = document.getElementById('player-name');
+        const playerPhoneInput = document.getElementById('player-phone'); // New phone input
         const boardSelect = document.getElementById('board-select');
         const joinBtn = document.getElementById('join-btn');
+        const boardPreviewImg = document.getElementById('board-preview-img');
         const lastDrawnImg = document.getElementById('last-drawn-img');
         const playerBoardBg = document.getElementById('player-board-bg');
         const playerBoardMarkers = document.getElementById('player-board-markers');
@@ -75,8 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const chosenBoardName = document.getElementById('chosen-board-name');
         
         let myBoard = null;
-        // ✨ NEW: Keep a local copy of the drawn cards for verification
-        let drawnCards = [];
 
         socket.on('game:boardPool', (boardPool) => {
             boardSelect.innerHTML = '<option value="" disabled selected>Elige un tablero</option>';
@@ -90,15 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         boardSelect.addEventListener('change', () => {
             const selectedBoardId = boardSelect.value;
-            const boardPreviewImg = document.getElementById('board-preview-img');
             if (selectedBoardId) {
                 boardPreviewImg.src = `${boardImagePath}T${parseInt(selectedBoardId) + 1}.webp`;
             }
         });
 
         joinBtn.addEventListener('click', () => {
-            const playerNameInput = document.getElementById('player-name');
-            const playerPhoneInput = document.getElementById('player-phone');
             const playerName = playerNameInput.value.trim();
             const phoneNumber = playerPhoneInput.value.trim();
             const boardId = parseInt(boardSelect.value, 10);
@@ -118,14 +116,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (myBoard) {
-                // ✨ UPDATED: Store the latest list of drawn cards
-                drawnCards = gameState.drawnCards;
-                if (drawnCards.length > 0) {
-                    const lastCard = drawnCards[drawnCards.length - 1];
+                updateMarkers(gameState.drawnCards);
+                if (gameState.drawnCards.length > 0) {
+                    const lastCard = gameState.drawnCards[gameState.drawnCards.length - 1];
                     lastDrawnImg.src = `${imageFolderPath}${lastCard}`;
                 }
-                // ✨ NEW: Check win condition every time a new card is drawn
-                checkWinCondition();
             }
         });
 
@@ -140,41 +135,30 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < 16; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'marker-cell';
-                cell.addEventListener('click', toggleMark);
                 playerBoardMarkers.appendChild(cell);
             }
         }
 
-        function toggleMark(event) {
-            const cell = event.currentTarget;
-            if (cell.querySelector('.marker')) {
-                cell.innerHTML = ''; // Un-mark
-            } else {
-                const marker = document.createElement('div');
-                marker.className = 'marker';
-                marker.textContent = 'X';
-                cell.appendChild(marker); // Mark
-            }
-            checkWinCondition();
-        }
-
-        /** ✨ REWRITTEN: This function now checks both player marks and server-drawn cards */
-        function checkWinCondition() {
-            if (!myBoard) return;
-
-            // Condition 1: Count how many squares the player has manually marked.
-            const manuallyMarkedCount = playerBoardMarkers.querySelectorAll('.marker').length;
-
-            // Condition 2: Check if all cards on the player's board have been drawn by the host.
-            const boardCardIds = new Set(myBoard.cards.map(c => c.id));
+        function updateMarkers(drawnCards) {
             const drawnCardsSet = new Set(drawnCards);
-            const allCardsAreDrawn = [...boardCardIds].every(cardId => drawnCardsSet.has(cardId));
+            let markedCount = 0;
 
-            // The button is only enabled if the player has marked all 16 AND all 16 have been drawn.
-            if (manuallyMarkedCount === 16 && allCardsAreDrawn) {
+            myBoard.cards.forEach(card => {
+                if (drawnCardsSet.has(card.id)) {
+                    markedCount++;
+                    const index = card.pos.row * 4 + card.pos.col;
+                    const cell = playerBoardMarkers.children[index];
+                    if (cell && !cell.hasChildNodes()) {
+                        const marker = document.createElement('div');
+                        marker.className = 'marker';
+                        marker.textContent = 'X';
+                        cell.appendChild(marker);
+                    }
+                }
+            });
+
+            if (markedCount === myBoard.cards.length && myBoard.cards.length > 0) {
                 claimWinBtn.disabled = false;
-            } else {
-                claimWinBtn.disabled = true;
             }
         }
 
