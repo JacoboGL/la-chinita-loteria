@@ -159,6 +159,30 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 }
 .last-drawn-card-display img { max-width: 100%; max-height: 100%; }
 
+.drawn-cards-history {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    /* This value controls the overall size. Reduce it to make the cards smaller. */
+    max-width: 280px; 
+    margin: 0 auto 20px;
+}
+.history-card-cell {
+    border: 2px dashed #ddd;
+    border-radius: 5px;
+    aspect-ratio: 3 / 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fafafa;
+}
+.history-card-cell img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
 /* ✨ UPDATED: Player board with correct aspect ratio */
 #player-board {
     position: relative;
