@@ -50,14 +50,15 @@ document.addEventListener('DOMContentLoaded', () => {
             playerList.innerHTML = '';
             Object.values(gameState.players).forEach(player => {
                 const li = document.createElement('li');
-                // ✨ UPDATED: Display player's phone number
                 li.textContent = `${player.name} - ${player.phone} (Tablero #${player.board.id + 1})`;
                 playerList.appendChild(li);
             });
         });
 
+        // ✨ UPDATED: The handler now receives a 'player' object.
         socket.on('game:playerWon', (player) => {
-            winnerNotification.textContent = `🎉 ¡${player.name} - ${player.phone} tiene Lotería! 🎉`;
+            // Display both the name and the phone number.
+            winnerNotification.innerHTML = `🎉 ¡${player.name} tiene Lotería! 🎉<br><small>${player.phone}</small>`;
             winnerNotification.classList.remove('hidden');
             drawButton.disabled = true;
         });
@@ -119,8 +120,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (myBoard) {
                 drawnCards = gameState.drawnCards;
                 updateDrawnCardsHistory(drawnCards);
-                // ✨ REVERTED: We no longer auto-mark, but we check if a win is possible
                 checkWinCondition();
+            }
+        });
+
+        // ✨ NEW: Add this listener for all players
+        socket.on('game:playerWon', (player) => {
+            // Show an alert to all players
+            alert(`¡Alguien ha cantado Lotería! El juego ha terminado.`);
+            
+            // Disable the button for all players, as the game is over.
+            if (claimWinBtn) {
+                claimWinBtn.disabled = true;
+                claimWinBtn.textContent = "Juego Terminado";
             }
         });
 
@@ -135,7 +147,6 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < 16; i++) {
                 const cell = document.createElement('div');
                 cell.className = 'marker-cell';
-                // ✨ REVERTED: Add event listener for manual marking
                 cell.addEventListener('click', toggleMark);
                 playerBoardMarkers.appendChild(cell);
             }
@@ -160,33 +171,26 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        /** ✨ REVERTED: Toggles a marker on a cell when clicked */
         function toggleMark(event) {
             const cell = event.currentTarget;
             if (cell.querySelector('.marker')) {
-                cell.innerHTML = ''; // Un-mark
+                cell.innerHTML = '';
             } else {
                 const marker = document.createElement('div');
                 marker.className = 'marker';
                 marker.textContent = 'X';
-                cell.appendChild(marker); // Mark
+                cell.appendChild(marker);
             }
             checkWinCondition();
         }
 
-        /** ✨ REVERTED & UPDATED: Checks both player marks and server-drawn cards */
         function checkWinCondition() {
             if (!myBoard) return;
-
-            // Condition 1: Count how many squares the player has manually marked.
             const manuallyMarkedCount = playerBoardMarkers.querySelectorAll('.marker').length;
-
-            // Condition 2: Check if all cards on the player's board have been drawn by the host.
             const boardCardIds = new Set(myBoard.cards.map(c => c.id));
             const drawnCardsSet = new Set(drawnCards);
             const allCardsAreDrawn = [...boardCardIds].every(cardId => drawnCardsSet.has(cardId));
 
-            // The button is only enabled if the player has marked all 16 AND all 16 have been drawn.
             if (manuallyMarkedCount === 16 && allCardsAreDrawn) {
                 claimWinBtn.disabled = false;
             } else {

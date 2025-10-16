@@ -54,10 +54,9 @@ function generateBoardPool() {
     }
 }
 
-/** ✨ NEW: Generates a CSV file from the current player data */
 function generateCsvForCurrentGame() {
     if (Object.keys(gameState.players).length === 0) {
-        return; // Don't generate an empty file
+        return;
     }
     const playerData = Object.values(gameState.players).map(p => ({
         Nombre: p.name,
@@ -69,7 +68,6 @@ function generateCsvForCurrentGame() {
     const csv = Papa.unparse(playerData);
     const fileName = `player_log_${gameState.gameId}.csv`;
     
-    // Create logs directory if it doesn't exist
     if (!fs.existsSync('logs')) {
         fs.mkdirSync('logs');
     }
@@ -129,10 +127,10 @@ io.on('connection', (socket) => {
             name: playerName,
             phone: phoneNumber,
             board: chosenBoard,
-            won: 'No' // Initialize win status
+            won: 'No'
         };
         console.log(`Player ${playerName} (${phoneNumber}) joined with board ${boardId}.`);
-        generateCsvForCurrentGame(); // Update CSV when a new player joins
+        generateCsvForCurrentGame();
         io.emit('game:update', gameState);
     });
     
@@ -146,9 +144,11 @@ io.on('connection', (socket) => {
 
         if (allCardsMatch) {
             console.log(`Win confirmed for player: ${player.name}`);
-            player.won = 'Yes'; // Update win status
-            generateCsvForCurrentGame(); // Update CSV with the winner
-            io.to(gameState.hostSocketId).emit('game:playerWon', player);
+            player.won = 'Yes';
+            generateCsvForCurrentGame();
+            
+            // ✨ UPDATED: Broadcast the winner to EVERYONE (host and all players)
+            io.emit('game:playerWon', player);
         }
     });
 
@@ -161,7 +161,7 @@ io.on('connection', (socket) => {
         } else {
             if (gameState.players[socket.id]) {
                 delete gameState.players[socket.id];
-                generateCsvForCurrentGame(); // Update CSV if a player leaves
+                generateCsvForCurrentGame();
                 io.emit('game:update', gameState);
             }
         }
@@ -174,4 +174,3 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
-
