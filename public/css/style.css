@@ -15,7 +15,7 @@ body {
     max-width: 64px;
 }
 
-#join-game-form img {
+.logo {
     max-width: 200px;
 }
 
@@ -249,7 +249,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
     .marker { font-size: 3em;}
 
-    #join-game-form img {
+    .logo {
     min-width: 250px;
     }
 }
@@ -279,7 +279,7 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     box-sizing: border-box;
     }
 
-    #join-game-form img {
+    .logo {
     min-width: 350px;
     }
 }
