@@ -15,6 +15,10 @@ body {
     max-width: 64px;
 }
 
+#join-game-form img {
+    max-width: 200px;
+}
+
 #caller-area {
     background-color: #ffffff;
 	padding: 40px;
@@ -244,6 +248,10 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     }
 
     .marker { font-size: 3em;}
+
+    #join-game-form img {
+    min-width: 250px;
+    }
 }
 
 @media (min-width: 768px) {
@@ -269,6 +277,10 @@ button:disabled { background-color: #cccccc; cursor: not-allowed; }
     padding: 14% 0%; 
     gap: 0% 0%;
     box-sizing: border-box;
-}
+    }
+
+    #join-game-form img {
+    min-width: 350px;
+    }
 }
 
